@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MessageSquare, Users, TrendingUp, AlertCircle, Send, CheckCircle } from 'lucide-react';
 
 interface Analytics {
   totalLeads: number;
@@ -18,30 +17,51 @@ interface Analytics {
   optOutRate: number;
 }
 
-function StatCard({
-  label,
-  value,
-  sub,
-  icon: Icon,
-  color,
-}: {
-  label: string;
-  value: string | number;
-  sub?: string;
-  icon: React.ElementType;
-  color: string;
+const PIPELINE = [
+  { key: 'activeLeads',    label: 'DRIP ACTIVE',  color: 'var(--accent)' },
+  { key: 'repliedLeads',   label: 'REPLIED',       color: 'var(--green)' },
+  { key: 'qualifiedLeads', label: 'QUALIFIED',     color: 'var(--teal)' },
+  { key: 'optedOutLeads',  label: 'OPTED OUT',     color: 'var(--red)' },
+];
+
+function Metric({ code, label, value, unit, accent = false }: {
+  code: string; label: string; value: string | number; unit?: string; accent?: boolean;
 }) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-gray-400">{label}</p>
-          <p className="mt-1 text-2xl font-bold text-white">{value}</p>
-          {sub && <p className="mt-1 text-xs text-gray-500">{sub}</p>}
-        </div>
-        <div className={`p-2 rounded-lg ${color}`}>
-          <Icon className="w-5 h-5 text-white" />
-        </div>
+    <div style={{
+      background: 'var(--bg-surface)',
+      border: `1px solid ${accent ? 'var(--accent-dim)' : 'var(--border)'}`,
+      borderRadius: '8px',
+      padding: '18px 20px',
+      position: 'relative',
+      overflow: 'hidden',
+      animation: 'fadeUp 0.4s ease forwards',
+    }}>
+      {accent && (
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
+          background: 'var(--accent)',
+        }} />
+      )}
+      <div style={{
+        fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.1em',
+        color: accent ? 'var(--accent)' : 'var(--text-muted)', marginBottom: '10px',
+      }}>
+        {code} · {label}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+        <span style={{
+          fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 700,
+          color: accent ? 'var(--accent)' : 'var(--text-primary)', lineHeight: 1,
+          letterSpacing: '-0.03em',
+        }}>
+          {value}
+        </span>
+        {unit && (
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+            {unit}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -50,84 +70,125 @@ function StatCard({
 export default function OverviewPage() {
   const [data, setData] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    fetch('/api/analytics')
-      .then((r) => r.json())
-      .then((d) => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
+    const load = () =>
+      fetch('/api/analytics')
+        .then(r => r.json())
+        .then(d => { setData(d); setLoading(false); })
+        .catch(() => setLoading(false));
+    load();
+    const id = setInterval(() => { load(); setTick(t => t + 1); }, 30_000);
+    return () => clearInterval(id);
   }, []);
 
-  if (loading) {
-    return (
-      <div className="p-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-800 rounded w-48" />
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {[...Array(8)].map((_, i) => <div key={i} className="h-28 bg-gray-800 rounded-xl" />)}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const d = data ?? ({} as Analytics);
+  const capPct = Math.min(((d.todayMessages ?? 0) / 500) * 100, 100);
 
-  const stats = data ?? ({} as Analytics);
+  if (loading) return (
+    <div style={{ padding: '40px', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px' }}>
+      {[...Array(8)].map((_, i) => (
+        <div key={i} style={{ height: '100px', background: 'var(--bg-surface)', borderRadius: '8px', opacity: 0.5 }} />
+      ))}
+    </div>
+  );
 
   return (
-    <div className="p-8 space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Overview</h1>
-        <p className="text-sm text-gray-400 mt-1">Real-time campaign performance</p>
+    <div style={{ padding: '36px 40px', maxWidth: '1200px' }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '32px' }}>
+        <div>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--accent)', letterSpacing: '0.12em', marginBottom: '6px' }}>
+            COMMAND CENTER
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', margin: 0 }}>
+            Overview
+          </h1>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="blink" style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--green)', display: 'inline-block' }} />
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-secondary)', letterSpacing: '0.08em' }}>
+            LIVE · AUTO-REFRESH 30s
+          </span>
+        </div>
       </div>
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Leads" value={stats.totalLeads ?? 0} icon={Users} color="bg-blue-600" />
-        <StatCard label="Active in Drip" value={stats.activeLeads ?? 0} icon={Send} color="bg-indigo-600" />
-        <StatCard label="Replied" value={stats.repliedLeads ?? 0} icon={MessageSquare} color="bg-green-600" />
-        <StatCard label="Qualified" value={stats.qualifiedLeads ?? 0} icon={TrendingUp} color="bg-emerald-600" />
-        <StatCard label="Sent Today" value={stats.todayMessages ?? 0} sub="of 500 daily cap" icon={Send} color="bg-violet-600" />
-        <StatCard label="Delivery Rate" value={`${stats.deliveryRate ?? 0}%`} icon={CheckCircle} color="bg-cyan-600" />
-        <StatCard label="Reply Rate" value={`${stats.replyRate ?? 0}%`} icon={TrendingUp} color="bg-teal-600" />
-        <StatCard label="Opt-Outs" value={stats.optedOutLeads ?? 0} icon={AlertCircle} color="bg-red-600" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '24px' }}>
+        <Metric code="M01" label="TOTAL LEADS"   value={d.totalLeads ?? 0} />
+        <Metric code="M02" label="DRIP ACTIVE"   value={d.activeLeads ?? 0} accent />
+        <Metric code="M03" label="REPLIED"        value={d.repliedLeads ?? 0} />
+        <Metric code="M04" label="QUALIFIED"      value={d.qualifiedLeads ?? 0} />
+        <Metric code="M05" label="SENT TODAY"     value={d.todayMessages ?? 0} unit="/ 500" />
+        <Metric code="M06" label="DELIVERY RATE"  value={`${d.deliveryRate ?? 0}`} unit="%" />
+        <Metric code="M07" label="REPLY RATE"     value={`${d.replyRate ?? 0}`} unit="%" />
+        <Metric code="M08" label="OPTED OUT"      value={d.optedOutLeads ?? 0} />
       </div>
 
-      {/* Daily cap bar */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-        <div className="flex justify-between mb-2">
-          <span className="text-sm font-medium text-white">Daily Send Volume</span>
-          <span className="text-sm text-gray-400">{stats.todayMessages ?? 0} / 500</span>
+      {/* Daily Cap Bar */}
+      <div style={{
+        background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '8px',
+        padding: '20px 24px', marginBottom: '16px',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', color: 'var(--text-secondary)' }}>
+            DAILY THROUGHPUT
+          </span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: capPct > 80 ? 'var(--red)' : 'var(--accent)' }}>
+            {d.todayMessages ?? 0} / 500 MSG
+          </span>
         </div>
-        <div className="w-full bg-gray-800 rounded-full h-2.5">
-          <div
-            className="bg-blue-600 h-2.5 rounded-full transition-all"
-            style={{ width: `${Math.min(((stats.todayMessages ?? 0) / 500) * 100, 100)}%` }}
-          />
+        <div style={{ position: 'relative', height: '6px', background: 'var(--bg-raised)', borderRadius: '3px', overflow: 'hidden' }}>
+          <div style={{
+            position: 'absolute', left: 0, top: 0, bottom: 0,
+            width: `${capPct}%`,
+            background: capPct > 80 ? 'var(--red)' : 'var(--accent)',
+            borderRadius: '3px',
+            transition: 'width 0.6s ease',
+            boxShadow: capPct > 0 ? `0 0 8px ${capPct > 80 ? 'var(--red)' : 'var(--accent)'}66` : 'none',
+          }} />
         </div>
-        <p className="text-xs text-gray-500 mt-2">Twilio Messaging Service — rate limited to 10 SMS/min</p>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--text-muted)', marginTop: '8px', letterSpacing: '0.05em' }}>
+          RATE LIMITED — 10 SMS/MIN · TWILIO MESSAGING SERVICE
+        </div>
       </div>
 
-      {/* Campaign status breakdown */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-white mb-4">Pipeline Breakdown</h2>
-        <div className="space-y-3">
-          {[
-            { label: 'Drip Active', count: stats.activeLeads ?? 0, color: 'bg-blue-500' },
-            { label: 'Replied', count: stats.repliedLeads ?? 0, color: 'bg-green-500' },
-            { label: 'Qualified / Nurture', count: stats.qualifiedLeads ?? 0, color: 'bg-emerald-500' },
-            { label: 'Opted Out', count: stats.optedOutLeads ?? 0, color: 'bg-red-500' },
-          ].map(({ label, count, color }) => (
-            <div key={label} className="flex items-center gap-3">
-              <span className="text-sm text-gray-400 w-40">{label}</span>
-              <div className="flex-1 bg-gray-800 rounded-full h-2">
-                <div
-                  className={`${color} h-2 rounded-full`}
-                  style={{ width: `${Math.max((count / Math.max(stats.totalLeads ?? 1, 1)) * 100, 2)}%` }}
-                />
+      {/* Pipeline Funnel */}
+      <div style={{
+        background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '8px',
+        padding: '20px 24px',
+      }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', color: 'var(--text-secondary)', marginBottom: '18px' }}>
+          LEAD PIPELINE
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {PIPELINE.map(({ key, label, color }) => {
+            const count = (d as Record<string, number>)[key] ?? 0;
+            const pct = d.totalLeads ? (count / d.totalLeads) * 100 : 0;
+            return (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', width: '90px', letterSpacing: '0.06em' }}>
+                  {label}
+                </span>
+                <div style={{ flex: 1, height: '4px', background: 'var(--bg-raised)', borderRadius: '2px', overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%', width: `${Math.max(pct, pct > 0 ? 1 : 0)}%`,
+                    background: color, borderRadius: '2px',
+                    boxShadow: `0 0 6px ${color}66`,
+                    transition: 'width 0.8s ease',
+                  }} />
+                </div>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-primary)', width: '32px', textAlign: 'right' }}>
+                  {count}
+                </span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', width: '36px', textAlign: 'right' }}>
+                  {pct.toFixed(0)}%
+                </span>
               </div>
-              <span className="text-sm text-white w-8 text-right">{count}</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
