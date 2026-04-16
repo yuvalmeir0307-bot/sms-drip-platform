@@ -165,7 +165,7 @@ export default function OverviewPage() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {PIPELINE.map(({ key, label, color }) => {
-            const count = (d as Record<string, number>)[key] ?? 0;
+            const count = (d as unknown as Record<string, number>)[key] ?? 0;
             const pct = d.totalLeads ? (count / d.totalLeads) * 100 : 0;
             return (
               <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
