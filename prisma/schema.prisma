@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Lead {
+  id            String   @id @default(cuid())
+  notionId      String   @unique
+  name          String
+  phone         String
+  status        LeadStatus @default(NEW_LEAD)
+  campaignType  CampaignType @default(DRIP)
+  enrolledAt    DateTime?
+  repliedAt     DateTime?
+  lastContactAt DateTime?
+  optedOut      Boolean  @default(false)
+  optedOutAt    DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  messages      Message[]
+  campaignState CampaignState?
+
+  @@index([status])
+  @@index([phone])
+}
+
+model CampaignState {
+  id            String   @id @default(cuid())
+  leadId        String   @unique
+  lead          Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  campaignType  CampaignType
+  currentStep   Int      @default(0)
+  isActive      Boolean  @default(true)
+  isPaused      Boolean  @default(false)
+  restUntil     DateTime?
+  nextSendAt    DateTime?
+  cycleCount    Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Message {
+  id          String        @id @default(cuid())
+  leadId      String
+  lead        Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  direction   Direction
+  body        String
+  twilioSid   String?       @unique
+  status      MessageStatus @default(QUEUED)
+  step        Int?
+  campaignType CampaignType?
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  createdAt   DateTime      @default(now())
+
+  @@index([leadId])
+  @@index([createdAt])
+}
+
+model OptOut {
+  id        String   @id @default(cuid())
+  phone     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Settings {
+  id              String   @id @default("singleton")
+  senderName      String   @default("Your Name")
+  messagingServiceSid String?
+  quietHoursStart Int      @default(21)
+  quietHoursEnd   Int      @default(8)
+  notionDatabaseId String?
+  updatedAt       DateTime @updatedAt
+}
+
+enum LeadStatus {
+  NEW_LEAD
+  DRIP_ACTIVE
+  REPLIED
+  QUALIFIED
+  FOLLOW_UP_POOL
+  DEAL_SENT
+  DEAL_UNDER_REVIEW
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum CampaignType {
+  DRIP
+  NURTURE
+}
+
+enum Direction {
+  OUTBOUND
+  INBOUND
+}
+
+enum MessageStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+  RECEIVED
+}
