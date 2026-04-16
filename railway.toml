@@ -1,11 +1,11 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm install && npx prisma generate && npx tsc --noEmit"
+buildCommand = "npm install && npx prisma generate"
 
 [[services]]
 name = "campaign-worker"
-startCommand = "npx ts-node --esm workers/campaign-worker.ts"
+startCommand = "npx ts-node --project tsconfig.workers.json workers/campaign-worker.ts"
 
 [[services]]
 name = "notion-poller"
-startCommand = "npx ts-node --esm workers/notion-poller.ts"
+startCommand = "npx ts-node --project tsconfig.workers.json workers/notion-poller.ts"
