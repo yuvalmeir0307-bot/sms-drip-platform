@@ -1,36 +1,45 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 :root {
-  /* Base */
-  --bg-base:    #080808;
-  --bg-surface: #111111;
-  --bg-raised:  #1a1a1a;
-  --bg-hover:   #222222;
-  --border:     #2a2a2a;
-  --border-dim: #1e1e1e;
+  /* Base backgrounds */
+  --bg-base:    #f1f5f9;
+  --bg-surface: #ffffff;
+  --bg-raised:  #f8fafc;
+  --bg-hover:   #f1f5f9;
+
+  /* Sidebar */
+  --sidebar-bg:     #0f1f3d;
+  --sidebar-hover:  #1a2f52;
+  --sidebar-active: #1e3a6e;
+
+  /* Borders */
+  --border:     #e2e8f0;
+  --border-dim: #f1f5f9;
 
   /* Text */
-  --text-primary:   #f0ede8;
-  --text-secondary: #888882;
-  --text-muted:     #444440;
+  --text-primary:        #0f172a;
+  --text-secondary:      #475569;
+  --text-muted:          #94a3b8;
+  --text-sidebar:        #94a3b8;
+  --text-sidebar-active: #ffffff;
 
-  /* Accent — amber */
-  --accent:        #f59e0b;
-  --accent-dim:    #78490a;
-  --accent-glow:   rgba(245,158,11,0.12);
+  /* Accent — blue */
+  --accent:      #3b82f6;
+  --accent-dim:  #bfdbfe;
+  --accent-glow: rgba(59, 130, 246, 0.08);
 
   /* Status */
-  --green:   #22c55e;
-  --red:     #ef4444;
-  --blue:    #3b82f6;
-  --purple:  #a855f7;
-  --teal:    #14b8a6;
+  --green:  #10b981;
+  --red:    #ef4444;
+  --amber:  #f59e0b;
+  --purple: #8b5cf6;
+  --teal:   #14b8a6;
 
   /* Fonts */
-  --font-display: 'Syne', sans-serif;
-  --font-body:    'DM Sans', sans-serif;
-  --font-mono:    'IBM Plex Mono', monospace;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body:    'Plus Jakarta Sans', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
 }
 
 * { box-sizing: border-box; }
@@ -46,21 +55,36 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Scanline overlay on sidebar */
-.scanlines::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0,0,0,0.08) 2px,
-    rgba(0,0,0,0.08) 4px
-  );
-  pointer-events: none;
-  z-index: 0;
+/* ── Utility classes ───────────────────────────────────────────────── */
+
+.mono { font-family: var(--font-mono); }
+
+/* Card — white surface with subtle shadow */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
 }
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.badge-blue   { background: var(--accent-dim); color: var(--accent); }
+.badge-green  { background: #d1fae5; color: var(--green); }
+.badge-red    { background: #fee2e2; color: var(--red); }
+.badge-amber  { background: #fef3c7; color: var(--amber); }
+
+/* ── Animations ────────────────────────────────────────────────────── */
 
 /* Status blink */
 @keyframes blink {
@@ -83,11 +107,26 @@ body {
 }
 .count-in { animation: countIn 0.4s ease forwards; }
 
-/* Mono data */
-.mono { font-family: var(--font-mono); }
+/* Sidebar item slide-in */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.slide-in { animation: slideIn 0.25s ease forwards; }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: var(--bg-surface); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+/* Skeleton pulse */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.skeleton {
+  background: var(--border);
+  border-radius: 8px;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+/* ── Custom scrollbar (light theme) ───────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }

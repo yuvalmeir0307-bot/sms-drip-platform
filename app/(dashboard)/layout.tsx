@@ -5,11 +5,11 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, Target, BarChart3, Settings, Zap } from 'lucide-react';
 
 const NAV = [
-  { href: '/overview',       label: 'Overview',       icon: LayoutDashboard, code: '01' },
-  { href: '/contacts',       label: 'Contacts',       icon: Users,           code: '02' },
-  { href: '/opportunities',  label: 'Opportunities',  icon: Target,          code: '03' },
-  { href: '/insights',       label: 'Insights',       icon: BarChart3,       code: '04' },
-  { href: '/settings',       label: 'Settings',       icon: Settings,        code: '05' },
+  { href: '/overview',      label: 'Overview',      icon: LayoutDashboard },
+  { href: '/contacts',      label: 'Contacts',       icon: Users },
+  { href: '/opportunities', label: 'Opportunities',  icon: Target },
+  { href: '/insights',      label: 'Insights',       icon: BarChart3 },
+  { href: '/settings',      label: 'Settings',       icon: Settings },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -19,81 +19,102 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div style={{ display: 'flex', height: '100vh', background: 'var(--bg-base)', overflow: 'hidden' }}>
 
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}
-      <aside className="scanlines" style={{
-        position: 'relative',
-        width: '220px',
+      <aside style={{
+        width: '240px',
         flexShrink: 0,
-        background: 'var(--bg-surface)',
-        borderRight: '1px solid var(--border)',
+        background: 'var(--sidebar-bg)',
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative',
       }}>
 
         {/* Logo */}
         <div style={{
-          padding: '24px 20px 20px',
-          borderBottom: '1px solid var(--border-dim)',
-          position: 'relative',
-          zIndex: 1,
+          padding: '28px 20px 24px',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{
-              width: '28px', height: '28px', borderRadius: '6px',
-              background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              background: 'var(--accent)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              boxShadow: '0 0 0 4px rgba(59,130,246,0.2)',
             }}>
-              <Zap size={14} color="#000" fill="#000" />
+              <Zap size={16} color="#fff" fill="#fff" />
             </div>
-            <span style={{
-              fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '16px',
-              letterSpacing: '-0.02em', color: 'var(--text-primary)',
-            }}>
-              DRIP/OS
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', paddingLeft: '38px' }}>
-            <span className="blink" style={{
-              width: '5px', height: '5px', borderRadius: '50%',
-              background: 'var(--green)', display: 'inline-block',
-            }} />
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-secondary)', letterSpacing: '0.05em' }}>
-              SYSTEM ONLINE
-            </span>
+            <div>
+              <div style={{
+                fontFamily: 'var(--font-display)',
+                fontWeight: 800,
+                fontSize: '16px',
+                letterSpacing: '-0.02em',
+                color: '#ffffff',
+                lineHeight: 1.2,
+              }}>
+                DRIP/OS
+              </div>
+              <div style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '11px',
+                fontWeight: 500,
+                color: 'var(--text-sidebar)',
+                letterSpacing: '0.01em',
+                marginTop: '1px',
+              }}>
+                SMS Platform
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, padding: '12px 10px', position: 'relative', zIndex: 1 }}>
-          {NAV.map(({ href, label, icon: Icon, code }) => {
+        <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          {NAV.map(({ href, label, icon: Icon }, idx) => {
             const active = pathname === href;
             return (
-              <Link key={href} href={href} style={{
-                display: 'flex', alignItems: 'center', gap: '10px',
-                padding: '9px 10px', marginBottom: '2px', borderRadius: '6px',
-                textDecoration: 'none',
-                background: active ? 'var(--accent-glow)' : 'transparent',
-                border: active ? '1px solid var(--accent-dim)' : '1px solid transparent',
-                transition: 'all 0.15s',
-              }}
-                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'; }}
-                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+              <Link
+                key={href}
+                href={href}
+                className="slide-in"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  background: active ? 'var(--sidebar-active)' : 'transparent',
+                  borderLeft: active ? '3px solid var(--accent)' : '3px solid transparent',
+                  transition: 'background 0.15s, border-color 0.15s',
+                  animationDelay: `${idx * 40}ms`,
+                  animationFillMode: 'both',
+                }}
+                onMouseEnter={e => {
+                  if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--sidebar-hover)';
+                }}
+                onMouseLeave={e => {
+                  if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent';
+                }}
               >
+                <Icon
+                  size={16}
+                  color={active ? '#ffffff' : 'var(--text-sidebar)'}
+                  style={{ flexShrink: 0 }}
+                />
                 <span style={{
-                  fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.08em',
-                  color: active ? 'var(--accent)' : 'var(--text-muted)',
-                  width: '16px', flexShrink: 0,
-                }}>{code}</span>
-                <Icon size={13} color={active ? 'var(--accent)' : 'var(--text-secondary)'} />
-                <span style={{
-                  fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: active ? 600 : 400,
-                  color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '13px',
+                  fontWeight: active ? 600 : 500,
+                  color: active ? 'var(--text-sidebar-active)' : 'var(--text-sidebar)',
                   letterSpacing: '-0.01em',
-                }}>{label}</span>
-                {active && (
-                  <span style={{
-                    marginLeft: 'auto', width: '4px', height: '4px', borderRadius: '50%',
-                    background: 'var(--accent)', flexShrink: 0,
-                  }} />
-                )}
+                }}>
+                  {label}
+                </span>
               </Link>
             );
           })}
@@ -101,17 +122,42 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Footer */}
         <div style={{
-          padding: '14px 20px', borderTop: '1px solid var(--border-dim)',
-          position: 'relative', zIndex: 1,
+          padding: '16px 20px',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
         }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
-            RE WHOLESALE · v1.0.0
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}>
+            <span
+              className="blink"
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: 'var(--green)',
+                display: 'inline-block',
+                flexShrink: 0,
+              }}
+            />
+            <span style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '10px',
+              color: 'var(--text-sidebar)',
+              letterSpacing: '0.04em',
+            }}>
+              RE WHOLESALE · v1.0.0
+            </span>
           </div>
         </div>
       </aside>
 
       {/* ── Main ────────────────────────────────────────────────────────── */}
-      <main style={{ flex: 1, overflowY: 'auto', background: 'var(--bg-base)' }} className="fade-up">
+      <main
+        style={{ flex: 1, overflowY: 'auto', background: 'var(--bg-base)' }}
+        className="fade-up"
+      >
         {children}
       </main>
     </div>

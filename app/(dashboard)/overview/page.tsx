@@ -18,55 +18,176 @@ interface Analytics {
 }
 
 const PIPELINE = [
-  { key: 'activeLeads',    label: 'DRIP ACTIVE',  color: 'var(--accent)' },
-  { key: 'repliedLeads',   label: 'REPLIED',       color: 'var(--green)' },
-  { key: 'qualifiedLeads', label: 'QUALIFIED',     color: 'var(--teal)' },
-  { key: 'optedOutLeads',  label: 'OPTED OUT',     color: 'var(--red)' },
+  { key: 'activeLeads',    label: 'Drip Active', color: 'var(--accent)' },
+  { key: 'repliedLeads',   label: 'Replied',     color: 'var(--green)' },
+  { key: 'qualifiedLeads', label: 'Qualified',   color: 'var(--teal)' },
+  { key: 'optedOutLeads',  label: 'Opted Out',   color: 'var(--red)' },
 ];
 
-function Metric({ code, label, value, unit, accent = false }: {
-  code: string; label: string; value: string | number; unit?: string; accent?: boolean;
+/* ── KPI Card ─────────────────────────────────────────────────────── */
+function KpiCard({
+  label,
+  value,
+  unit,
+  sublabel,
+  accentBorder = false,
+  hero = false,
+}: {
+  label: string;
+  value: string | number;
+  unit?: string;
+  sublabel?: string;
+  accentBorder?: boolean;
+  hero?: boolean;
 }) {
+  if (hero) {
+    return (
+      <div style={{
+        background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
+        borderRadius: '12px',
+        padding: '22px 24px',
+        position: 'relative',
+        overflow: 'hidden',
+        boxShadow: '0 4px 14px rgba(59,130,246,0.35)',
+        animation: 'fadeUp 0.4s ease forwards',
+      }}>
+        {/* subtle pattern overlay */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 60%)',
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          fontFamily: 'var(--font-body)',
+          fontSize: '11px',
+          fontWeight: 600,
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          color: 'rgba(255,255,255,0.7)',
+          marginBottom: '10px',
+        }}>
+          {label}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+          <span style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '36px',
+            fontWeight: 800,
+            color: '#ffffff',
+            lineHeight: 1,
+            letterSpacing: '-0.03em',
+          }}>
+            {value}
+          </span>
+          {unit && (
+            <span style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '12px',
+              color: 'rgba(255,255,255,0.6)',
+            }}>
+              {unit}
+            </span>
+          )}
+        </div>
+        {sublabel && (
+          <div style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '12px',
+            color: 'rgba(255,255,255,0.6)',
+            marginTop: '6px',
+            fontWeight: 500,
+          }}>
+            {sublabel}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div style={{
       background: 'var(--bg-surface)',
-      border: `1px solid ${accent ? 'var(--accent-dim)' : 'var(--border)'}`,
-      borderRadius: '8px',
-      padding: '18px 20px',
+      border: '1px solid var(--border)',
+      borderRadius: '12px',
+      padding: '22px 24px',
       position: 'relative',
       overflow: 'hidden',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)',
       animation: 'fadeUp 0.4s ease forwards',
+      borderLeft: accentBorder ? '4px solid var(--accent)' : '1px solid var(--border)',
     }}>
-      {accent && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, height: '2px',
-          background: 'var(--accent)',
-        }} />
-      )}
       <div style={{
-        fontFamily: 'var(--font-mono)', fontSize: '9px', letterSpacing: '0.1em',
-        color: accent ? 'var(--accent)' : 'var(--text-muted)', marginBottom: '10px',
+        fontFamily: 'var(--font-body)',
+        fontSize: '11px',
+        fontWeight: 600,
+        letterSpacing: '0.05em',
+        textTransform: 'uppercase',
+        color: 'var(--text-muted)',
+        marginBottom: '10px',
       }}>
-        {code} · {label}
+        {label}
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
         <span style={{
-          fontFamily: 'var(--font-display)', fontSize: '32px', fontWeight: 700,
-          color: accent ? 'var(--accent)' : 'var(--text-primary)', lineHeight: 1,
+          fontFamily: 'var(--font-display)',
+          fontSize: '32px',
+          fontWeight: 800,
+          color: 'var(--text-primary)',
+          lineHeight: 1,
           letterSpacing: '-0.03em',
         }}>
           {value}
         </span>
         {unit && (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
+          <span style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '12px',
+            color: 'var(--text-muted)',
+          }}>
             {unit}
           </span>
         )}
+      </div>
+      {sublabel && (
+        <div style={{
+          fontFamily: 'var(--font-body)',
+          fontSize: '12px',
+          color: 'var(--text-muted)',
+          marginTop: '6px',
+          fontWeight: 500,
+        }}>
+          {sublabel}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Loading Skeleton ─────────────────────────────────────────────── */
+function LoadingSkeleton() {
+  return (
+    <div style={{ padding: '36px 40px', maxWidth: '1200px' }}>
+      {/* Header skeleton */}
+      <div style={{ marginBottom: '32px' }}>
+        <div className="skeleton" style={{ width: '120px', height: '14px', marginBottom: '10px' }} />
+        <div className="skeleton" style={{ width: '200px', height: '28px' }} />
+      </div>
+      {/* KPI grid skeleton */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="skeleton" style={{ height: '110px', borderRadius: '12px' }} />
+        ))}
+      </div>
+      {/* Bar cards */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="skeleton" style={{ height: '90px', borderRadius: '12px' }} />
+        <div className="skeleton" style={{ height: '160px', borderRadius: '12px' }} />
       </div>
     </div>
   );
 }
 
+/* ── Page ─────────────────────────────────────────────────────────── */
 export default function OverviewPage() {
   const [data, setData] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -83,109 +204,297 @@ export default function OverviewPage() {
     return () => clearInterval(id);
   }, []);
 
+  if (loading) return <LoadingSkeleton />;
+
   const d = data ?? ({} as Analytics);
   const capPct = Math.min(((d.todayMessages ?? 0) / 500) * 100, 100);
-
-  if (loading) return (
-    <div style={{ padding: '40px', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '12px' }}>
-      {[...Array(8)].map((_, i) => (
-        <div key={i} style={{ height: '100px', background: 'var(--bg-surface)', borderRadius: '8px', opacity: 0.5 }} />
-      ))}
-    </div>
-  );
 
   return (
     <div style={{ padding: '36px 40px', maxWidth: '1200px' }}>
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '32px' }}>
+      {/* ── Header ────────────────────────────────────────────────────── */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
+        marginBottom: '32px',
+      }}>
         <div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--accent)', letterSpacing: '0.12em', marginBottom: '6px' }}>
-            COMMAND CENTER
+          <div style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '12px',
+            fontWeight: 600,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: 'var(--accent)',
+            marginBottom: '6px',
+          }}>
+            Dashboard
           </div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-primary)', margin: 0 }}>
+          <h1 style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '28px',
+            fontWeight: 700,
+            letterSpacing: '-0.02em',
+            color: 'var(--text-primary)',
+            margin: 0,
+            lineHeight: 1.2,
+          }}>
             Overview
           </h1>
+          <p style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '14px',
+            color: 'var(--text-secondary)',
+            margin: '4px 0 0',
+            fontWeight: 400,
+          }}>
+            Real-time campaign performance
+          </p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span className="blink" style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--green)', display: 'inline-block' }} />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-secondary)', letterSpacing: '0.08em' }}>
-            LIVE · AUTO-REFRESH 30s
+
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border)',
+          borderRadius: '8px',
+          padding: '8px 14px',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+        }}>
+          <span
+            className="blink"
+            style={{
+              width: '7px',
+              height: '7px',
+              borderRadius: '50%',
+              background: 'var(--green)',
+              display: 'inline-block',
+              flexShrink: 0,
+            }}
+          />
+          <span style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '12px',
+            fontWeight: 500,
+            color: 'var(--text-secondary)',
+          }}>
+            Live · refreshes every 30s
           </span>
         </div>
       </div>
 
-      {/* KPI Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '24px' }}>
-        <Metric code="M01" label="TOTAL LEADS"   value={d.totalLeads ?? 0} />
-        <Metric code="M02" label="DRIP ACTIVE"   value={d.activeLeads ?? 0} accent />
-        <Metric code="M03" label="REPLIED"        value={d.repliedLeads ?? 0} />
-        <Metric code="M04" label="QUALIFIED"      value={d.qualifiedLeads ?? 0} />
-        <Metric code="M05" label="SENT TODAY"     value={d.todayMessages ?? 0} unit="/ 500" />
-        <Metric code="M06" label="DELIVERY RATE"  value={`${d.deliveryRate ?? 0}`} unit="%" />
-        <Metric code="M07" label="REPLY RATE"     value={`${d.replyRate ?? 0}`} unit="%" />
-        <Metric code="M08" label="OPTED OUT"      value={d.optedOutLeads ?? 0} />
-      </div>
-
-      {/* Daily Cap Bar */}
+      {/* ── KPI Grid ──────────────────────────────────────────────────── */}
       <div style={{
-        background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '8px',
-        padding: '20px 24px', marginBottom: '16px',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: '12px',
+        marginBottom: '20px',
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', color: 'var(--text-secondary)' }}>
-            DAILY THROUGHPUT
-          </span>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: capPct > 80 ? 'var(--red)' : 'var(--accent)' }}>
-            {d.todayMessages ?? 0} / 500 MSG
-          </span>
-        </div>
-        <div style={{ position: 'relative', height: '6px', background: 'var(--bg-raised)', borderRadius: '3px', overflow: 'hidden' }}>
+        <KpiCard label="Total Leads"   value={d.totalLeads ?? 0} />
+        <KpiCard label="Drip Active"   value={d.activeLeads ?? 0}    hero />
+        <KpiCard label="Replied"       value={d.repliedLeads ?? 0}   accentBorder />
+        <KpiCard label="Qualified"     value={d.qualifiedLeads ?? 0} />
+        <KpiCard
+          label="Sent Today"
+          value={d.todayMessages ?? 0}
+          unit="/ 500"
+          sublabel="Daily cap"
+        />
+        <KpiCard
+          label="Delivery Rate"
+          value={`${d.deliveryRate ?? 0}`}
+          unit="%"
+          sublabel="Messages delivered"
+        />
+        <KpiCard
+          label="Reply Rate"
+          value={`${d.replyRate ?? 0}`}
+          unit="%"
+          sublabel="Leads replied"
+        />
+        <KpiCard
+          label="Opted Out"
+          value={d.optedOutLeads ?? 0}
+          sublabel={`${d.optOutRate ?? 0}% opt-out rate`}
+        />
+      </div>
+
+      {/* ── Daily Cap Bar ─────────────────────────────────────────────── */}
+      <div style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border)',
+        borderRadius: '12px',
+        padding: '22px 24px',
+        marginBottom: '12px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)',
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '14px',
+        }}>
+          <div>
+            <div style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '14px',
+              fontWeight: 600,
+              color: 'var(--text-primary)',
+              marginBottom: '2px',
+            }}>
+              Daily Throughput
+            </div>
+            <div style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '12px',
+              color: 'var(--text-muted)',
+              fontWeight: 400,
+            }}>
+              Rate limited — 10 SMS/min via Twilio
+            </div>
+          </div>
           <div style={{
-            position: 'absolute', left: 0, top: 0, bottom: 0,
+            fontFamily: 'var(--font-mono)',
+            fontSize: '13px',
+            fontWeight: 500,
+            color: capPct > 80 ? 'var(--red)' : 'var(--accent)',
+            background: capPct > 80 ? '#fee2e2' : 'var(--accent-glow)',
+            padding: '4px 12px',
+            borderRadius: '6px',
+          }}>
+            {d.todayMessages ?? 0} / 500
+          </div>
+        </div>
+        <div style={{
+          position: 'relative',
+          height: '8px',
+          background: 'var(--bg-raised)',
+          borderRadius: '99px',
+          overflow: 'hidden',
+          border: '1px solid var(--border)',
+        }}>
+          <div style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
             width: `${capPct}%`,
-            background: capPct > 80 ? 'var(--red)' : 'var(--accent)',
-            borderRadius: '3px',
+            background: capPct > 80
+              ? 'linear-gradient(90deg, var(--red), #f87171)'
+              : 'linear-gradient(90deg, #2563eb, var(--accent))',
+            borderRadius: '99px',
             transition: 'width 0.6s ease',
-            boxShadow: capPct > 0 ? `0 0 8px ${capPct > 80 ? 'var(--red)' : 'var(--accent)'}66` : 'none',
           }} />
         </div>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--text-muted)', marginTop: '8px', letterSpacing: '0.05em' }}>
-          RATE LIMITED — 10 SMS/MIN · TWILIO MESSAGING SERVICE
+        <div style={{
+          fontFamily: 'var(--font-body)',
+          fontSize: '12px',
+          color: 'var(--text-muted)',
+          marginTop: '8px',
+          fontWeight: 500,
+        }}>
+          {capPct.toFixed(0)}% of daily limit used
         </div>
       </div>
 
-      {/* Pipeline Funnel */}
+      {/* ── Pipeline Funnel ───────────────────────────────────────────── */}
       <div style={{
-        background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '8px',
-        padding: '20px 24px',
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border)',
+        borderRadius: '12px',
+        padding: '22px 24px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)',
       }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', letterSpacing: '0.1em', color: 'var(--text-secondary)', marginBottom: '18px' }}>
-          LEAD PIPELINE
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+        }}>
+          <div style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '14px',
+            fontWeight: 600,
+            color: 'var(--text-primary)',
+          }}>
+            Lead Pipeline
+          </div>
+          <div style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '11px',
+            color: 'var(--text-muted)',
+          }}>
+            {d.totalLeads ?? 0} total
+          </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {PIPELINE.map(({ key, label, color }) => {
             const count = (d as unknown as Record<string, number>)[key] ?? 0;
             const pct = d.totalLeads ? (count / d.totalLeads) * 100 : 0;
             return (
-              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', width: '90px', letterSpacing: '0.06em' }}>
-                  {label}
-                </span>
-                <div style={{ flex: 1, height: '4px', background: 'var(--bg-raised)', borderRadius: '2px', overflow: 'hidden' }}>
+              <div key={key}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '6px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: color,
+                      flexShrink: 0,
+                    }} />
+                    <span style={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '13px',
+                      fontWeight: 500,
+                      color: 'var(--text-secondary)',
+                    }}>
+                      {label}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '12px',
+                      color: 'var(--text-muted)',
+                    }}>
+                      {pct.toFixed(0)}%
+                    </span>
+                    <span style={{
+                      fontFamily: 'var(--font-display)',
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      color: 'var(--text-primary)',
+                      minWidth: '32px',
+                      textAlign: 'right',
+                    }}>
+                      {count}
+                    </span>
+                  </div>
+                </div>
+                <div style={{
+                  height: '6px',
+                  background: 'var(--bg-raised)',
+                  borderRadius: '99px',
+                  overflow: 'hidden',
+                  border: '1px solid var(--border-dim)',
+                }}>
                   <div style={{
-                    height: '100%', width: `${Math.max(pct, pct > 0 ? 1 : 0)}%`,
-                    background: color, borderRadius: '2px',
-                    boxShadow: `0 0 6px ${color}66`,
+                    height: '100%',
+                    width: `${Math.max(pct, pct > 0 ? 0.5 : 0)}%`,
+                    background: color,
+                    borderRadius: '99px',
                     transition: 'width 0.8s ease',
+                    opacity: 0.85,
                   }} />
                 </div>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-primary)', width: '32px', textAlign: 'right' }}>
-                  {count}
-                </span>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--text-muted)', width: '36px', textAlign: 'right' }}>
-                  {pct.toFixed(0)}%
-                </span>
               </div>
             );
           })}
