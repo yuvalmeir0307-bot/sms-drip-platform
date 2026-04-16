@@ -1,12 +1,10 @@
 import { Worker, Job } from 'bullmq';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/db';
 import { connection, SMS_QUEUE, DRIP_SCHEDULE_QUEUE, NURTURE_SCHEDULE_QUEUE, SMSJobData, ScheduleJobData, smsQueue, dripScheduleQueue, nurtureScheduleQueue } from '../lib/queue';
 import { sendSMS } from '../lib/twilio';
 import { getDripStep, getNextDripDelay, isAfterLastDripStep, DRIP_REST_MS } from '../lib/drip-engine';
-import { getNurtureStep, getNurtureLoopVariant, getLoopDelayMs, isAfterLastNurtureTouch } from '../lib/nurture-engine';
+import { getNurtureStep, getNurtureLoopVariant, getLoopDelayMs, getNurtureGapMs, isAfterLastNurtureTouch } from '../lib/nurture-engine';
 import { isQuietHours, msUntilQuietHoursEnd } from '../lib/quiet-hours';
-
-const prisma = new PrismaClient();
 
 const SENDER_NAME = process.env.SENDER_NAME ?? 'Your Name';
 const RATE_LIMIT_MAX = 10;
@@ -159,7 +157,8 @@ const nurtureWorker = new Worker<ScheduleJobData>(
       const touch = getNurtureStep(step);
       if (!touch) return;
       body = touch.template(lead.name, SENDER_NAME);
-      nextDelay = step < 4 ? (getNurtureStep(step + 1)?.delayMs ?? getLoopDelayMs()) : getLoopDelayMs();
+      // Use gap between consecutive touches (absolute delays → relative gaps)
+      nextDelay = step < 4 ? getNurtureGapMs(step, step + 1) : getLoopDelayMs();
     } else {
       // Infinite loop
       const cycleCount = lead.campaignState?.cycleCount ?? 0;
@@ -180,7 +179,7 @@ const nurtureWorker = new Worker<ScheduleJobData>(
       campaignType: 'NURTURE',
     });
 
-    const nextStep = isAfterLastNurtureTouch(step) ? step + 1 : step + 1;
+    const nextStep = step + 1;
     await nurtureScheduleQueue.add(
       `nurture-${leadId}-step${nextStep}`,
       { leadId, step: nextStep },

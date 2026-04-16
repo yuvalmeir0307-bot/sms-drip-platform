@@ -1,21 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { updateLeadStatus } from '@/lib/notion';
+import { validateTwilioSignature } from '@/lib/twilio';
 
 const OPT_OUT_KEYWORDS = ['STOP', 'UNSUBSCRIBE', 'CANCEL', 'END', 'QUIT'];
 const OPT_IN_KEYWORDS = ['START', 'YES', 'UNSTOP'];
 
 export async function POST(req: NextRequest) {
+  // Verify request is genuinely from Twilio
+  const signature = req.headers.get('x-twilio-signature') ?? '';
+  const url = `${process.env.NEXT_PUBLIC_APP_URL}/api/twilio/incoming`;
   const formData = await req.formData();
-  const from = formData.get('From') as string;
-  const body = (formData.get('Body') as string)?.trim().toUpperCase();
+  const params: Record<string, string> = {};
+  formData.forEach((value, key) => { params[key] = value.toString(); });
+
+  if (process.env.NODE_ENV === 'production' && !validateTwilioSignature(signature, url, params)) {
+    return new NextResponse('Forbidden', { status: 403 });
+  }
+
+  const from = params['From'];
+  const body = params['Body']?.trim().toUpperCase();
 
   if (!from || !body) {
     return new NextResponse('Missing fields', { status: 400 });
   }
 
   const normalizedPhone = from;
-  const messageBody = (formData.get('Body') as string)?.trim();
+  const messageBody = params['Body']?.trim() ?? '';
 
   // ── Opt-Out ──────────────────────────────────────────────────────────────
   if (OPT_OUT_KEYWORDS.includes(body)) {

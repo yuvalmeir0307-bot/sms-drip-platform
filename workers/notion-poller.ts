@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/db';
 import { getDripActiveLeads } from '../lib/notion';
 import { lookupPhone } from '../lib/twilio';
 import { dripScheduleQueue } from '../lib/queue';
-
-const prisma = new PrismaClient();
 
 const POLL_INTERVAL_MS = 2 * 60 * 1000; // every 2 minutes
 

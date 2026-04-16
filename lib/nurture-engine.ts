@@ -65,6 +65,15 @@ export function isAfterLastNurtureTouch(step: number) {
   return step >= NURTURE_TOUCHES.length;
 }
 
+// Returns the gap (ms) between two consecutive touches.
+// Delays in NURTURE_TOUCHES are absolute from enrollment, so gap = next.delayMs - current.delayMs
+export function getNurtureGapMs(fromStep: number, toStep: number): number {
+  const from = NURTURE_TOUCHES.find((t) => t.step === fromStep);
+  const to = NURTURE_TOUCHES.find((t) => t.step === toStep);
+  if (!from || !to) return getLoopDelayMs();
+  return Math.max(to.delayMs - from.delayMs, daysMs(1)); // min 1 day gap
+}
+
 function daysMs(days: number) {
   return days * 24 * 60 * 60 * 1000;
 }
