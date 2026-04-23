@@ -2,7 +2,7 @@ import { Worker, Job } from 'bullmq';
 import { prisma } from '../lib/db';
 import { getConnection, SMS_QUEUE, DRIP_SCHEDULE_QUEUE, NURTURE_SCHEDULE_QUEUE, SMSJobData, ScheduleJobData, smsQueue, dripScheduleQueue, nurtureScheduleQueue } from '../lib/queue';
 const connection = getConnection();
-import { sendSMS } from '../lib/twilio';
+import { sendSMS } from '../lib/sms-provider';
 import { getDripStep, getNextDripDelay, isAfterLastDripStep, DRIP_REST_MS } from '../lib/drip-engine';
 import { getNurtureStep, getNurtureLoopVariant, getLoopDelayMs, getNurtureGapMs, isAfterLastNurtureTouch } from '../lib/nurture-engine';
 import { isQuietHours, msUntilQuietHoursEnd } from '../lib/quiet-hours';

@@ -8,7 +8,7 @@ datasource db {
 
 model Lead {
   id            String   @id @default(cuid())
-  notionId      String   @unique
+  notionId      String?  @unique
   name          String
   phone         String
   status        LeadStatus @default(NEW_LEAD)

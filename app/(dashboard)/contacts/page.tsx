@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, RefreshCw, Play, Pause } from 'lucide-react';
+import { Search, RefreshCw, Play, Pause, UserPlus, X } from 'lucide-react';
 
 const STATUS_COLORS: Record<string, string> = {
   NEW_LEAD: 'bg-gray-700 text-gray-300',
@@ -47,6 +47,11 @@ export default function ContactsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [enrolling, setEnrolling] = useState<string | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [addName, setAddName] = useState('');
+  const [addPhone, setAddPhone] = useState('');
+  const [addError, setAddError] = useState('');
+  const [adding, setAdding] = useState(false);
 
   const fetchLeads = (status = statusFilter) => {
     setLoading(true);
@@ -71,6 +76,24 @@ export default function ContactsPage() {
     fetchLeads();
   };
 
+  const addContact = async () => {
+    setAddError('');
+    if (!addName.trim() || !addPhone.trim()) { setAddError('Name and phone required'); return; }
+    setAdding(true);
+    const res = await fetch('/api/contacts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: addName, phone: addPhone }),
+    });
+    const data = await res.json();
+    setAdding(false);
+    if (!res.ok) { setAddError(data.error ?? 'Failed'); return; }
+    setShowAdd(false);
+    setAddName('');
+    setAddPhone('');
+    fetchLeads();
+  };
+
   const filtered = leads.filter(
     (l) =>
       l.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -84,13 +107,65 @@ export default function ContactsPage() {
           <h1 className="text-2xl font-bold text-white">Contacts</h1>
           <p className="text-sm text-gray-400 mt-1">{total} total leads</p>
         </div>
-        <button
-          onClick={() => fetchLeads()}
-          className="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-sm text-white rounded-lg transition-colors"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Refresh
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => fetchLeads()}
+            className="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-sm text-white rounded-lg transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-sm text-white rounded-lg transition-colors"
+          >
+            <UserPlus className="w-4 h-4" />
+            Add Contact
+          </button>
+        </div>
+
+        {/* Add Contact Modal */}
+        {showAdd && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+            <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-white font-semibold">Add Contact</h2>
+                <button onClick={() => { setShowAdd(false); setAddError(''); }} className="text-gray-400 hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Full Name</label>
+                  <input
+                    value={addName}
+                    onChange={(e) => setAddName(e.target.value)}
+                    placeholder="John Smith"
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Phone Number</label>
+                  <input
+                    value={addPhone}
+                    onChange={(e) => setAddPhone(e.target.value)}
+                    placeholder="(414) 555-1234"
+                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                {addError && <p className="text-xs text-red-400">{addError}</p>}
+                <p className="text-xs text-gray-500">Contact will be enrolled in the drip campaign immediately.</p>
+              </div>
+              <button
+                onClick={addContact}
+                disabled={adding}
+                className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                {adding ? 'Starting campaign...' : 'Add & Start Drip'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Filters */}
